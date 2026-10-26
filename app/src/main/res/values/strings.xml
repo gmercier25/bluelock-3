@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BlueLock</string>
+    <string name="tile_label">Verrouiller l\'auto</string>
+    <string name="widget_desc">État du véhicule et verrouillage rapide</string>
+    <string name="sc_lock">Verrouiller</string>
+    <string name="sc_unlock">Déverrouiller</string>
+    <string name="sc_warm">Chauffer</string>
+    <string name="sc_cool">Refroidir</string>
+</resources>

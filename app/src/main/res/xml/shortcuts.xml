@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_lock"
+        android:shortcutId="lock"
+        android:shortcutShortLabel="@string/sc_lock">
+        <intent
+            android:action="ca.gmercier.bluelock.SHORTCUT_LOCK"
+            android:targetClass="ca.gmercier.bluelock.ShortcutActivity"
+            android:targetPackage="ca.gmercier.bluelock" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_unlock"
+        android:shortcutId="unlock"
+        android:shortcutShortLabel="@string/sc_unlock">
+        <intent
+            android:action="ca.gmercier.bluelock.SHORTCUT_UNLOCK"
+            android:targetClass="ca.gmercier.bluelock.MainActivity"
+            android:targetPackage="ca.gmercier.bluelock" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_warm"
+        android:shortcutId="warm"
+        android:shortcutShortLabel="@string/sc_warm">
+        <intent
+            android:action="ca.gmercier.bluelock.SHORTCUT_WARM"
+            android:targetClass="ca.gmercier.bluelock.ShortcutActivity"
+            android:targetPackage="ca.gmercier.bluelock" />
+    </shortcut>
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/sc_cool"
+        android:shortcutId="cool"
+        android:shortcutShortLabel="@string/sc_cool">
+        <intent
+            android:action="ca.gmercier.bluelock.SHORTCUT_COOL"
+            android:targetClass="ca.gmercier.bluelock.ShortcutActivity"
+            android:targetPackage="ca.gmercier.bluelock" />
+    </shortcut>
+</shortcuts>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="18dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="32dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Réglages"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/Hint"
+            android:text="Tout est chiffré et conservé uniquement sur ce téléphone. Rien n'est envoyé ailleurs que chez Hyundai." />
+
+        <!-- ============ Compte ============ -->
+        <TextView style="@style/SectionTitle" android:text="Compte MyHyundai" />
+
+        <LinearLayout style="@style/Card">
+
+            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="Courriel" />
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="emailAddress"
+                android:inputType="textEmailAddress" />
+
+            <TextView style="@style/Label" android:text="Mot de passe" />
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="password"
+                android:inputType="textPassword" />
+
+            <TextView style="@style/Label" android:text="NIP Bluelink (4 chiffres)" />
+            <EditText
+                android:id="@+id/etPin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberPassword"
+                android:maxLength="4" />
+
+            <TextView style="@style/Label" android:text="Code de vérification envoyé par" />
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/rbEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="24dp"
+                    android:text="Courriel" />
+
+                <RadioButton
+                    android:id="@+id/rbSms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Texto" />
+            </RadioGroup>
+
+            <TextView style="@style/Label" android:text="Nom affiché (facultatif)" />
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Ex. : Mon Tucson"
+                android:inputType="textCapSentences" />
+        </LinearLayout>
+
+        <!-- ============ Climatisation ============ -->
+        <TextView style="@style/SectionTitle" android:text="Climatisation" />
+
+        <LinearLayout style="@style/Card">
+
+            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="« Chauffer » — température" />
+            <Spinner
+                android:id="@+id/spWarmTemp"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <CheckBox
+                android:id="@+id/cbWarmFront"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dégivrage du pare-brise" />
+
+            <CheckBox
+                android:id="@+id/cbWarmRear"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dégivrage de la lunette arrière et des rétroviseurs" />
+
+            <CheckBox
+                android:id="@+id/cbWarmSteering"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Volant chauffant" />
+
+            <TextView style="@style/Label" android:text="« Chauffer » — sièges chauffants" />
+            <Spinner
+                android:id="@+id/spWarmSeat"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView style="@style/Label" android:layout_marginTop="18dp" android:text="« Refroidir » — température" />
+            <Spinner
+                android:id="@+id/spCoolTemp"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView style="@style/Label" android:text="« Refroidir » — sièges ventilés" />
+            <Spinner
+                android:id="@+id/spCoolSeat"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <CheckBox
+                android:id="@+id/cbSeatsAll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Appliquer aux sièges arrière aussi" />
+
+            <TextView style="@style/Label" android:text="Durée" />
+            <Spinner
+                android:id="@+id/spDuration"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+        </LinearLayout>
+
+        <!-- ============ Image ============ -->
+        <TextView style="@style/SectionTitle" android:text="Image du véhicule" />
+
+        <LinearLayout style="@style/Card">
+
+            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="Version" />
+            <Spinner
+                android:id="@+id/spTrim"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView style="@style/Label" android:text="Couleur" />
+            <Spinner
+                android:id="@+id/spColor"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+        </LinearLayout>
+
+        <!-- ============ Verrouillage auto ============ -->
+        <TextView
+            android:id="@+id/walkSection"
+            style="@style/SectionTitle"
+            android:text="Verrouillage auto (walk-away lock)" />
+
+        <LinearLayout style="@style/Card">
+
+            <Switch
+                android:id="@+id/swWalk"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Verrouiller quand je m'éloigne"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/Hint"
+                android:text="Quand ton téléphone se déconnecte du Bluetooth du véhicule, BlueLock attend le délai choisi, vérifie que l'auto est déverrouillée et arrêtée (moteur et climatisation), puis la verrouille. Si le Bluetooth se reconnecte pendant le compte à rebours, c'est annulé." />
+
+            <TextView
+                android:id="@+id/tvWalkDevice"
+                style="@style/Label"
+                android:layout_marginTop="14dp"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnWalkDevice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choisir le Bluetooth du véhicule" />
+
+            <TextView style="@style/Label" android:text="Délai avant le verrouillage" />
+            <Spinner
+                android:id="@+id/spWalkDelay"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <CheckBox
+                android:id="@+id/cbWalkConfirm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Demander confirmation (ne jamais verrouiller sans mon accord)" />
+
+            <CheckBox
+                android:id="@+id/cbWalkNotify"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="M'avertir aussi quand l'auto est déjà verrouillée" />
+
+            <TextView
+                android:id="@+id/tvBattery"
+                style="@style/Hint"
+                android:layout_marginTop="12dp" />
+
+            <Button
+                android:id="@+id/btnBattery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Désactiver l'optimisation de batterie" />
+
+            <Button
+                android:id="@+id/btnWalkTest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tester (simulation, sans verrouiller)" />
+
+            <TextView
+                style="@style/Hint"
+                android:text="⚠ Garde toujours ta clé sur toi : si le téléphone reste dans l'auto quand elle s'éteint, elle peut se verrouiller." />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="28dp"
+            android:backgroundTint="@color/accent"
+            android:text="Enregistrer"
+            android:textColor="#FFFFFFFF"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnReset"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Tout effacer de ce téléphone"
+            android:textColor="@color/warn" />
+    </LinearLayout>
+</ScrollView>
