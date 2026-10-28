@@ -96,16 +96,52 @@ object Car {
         if (parsed != null) saveStatus(tweak(parsed.copy(lastCheck = System.currentTimeMillis())))
     }
 
+    /**
+     * Après un verrouillage / déverrouillage, vérifie l'état RÉEL des portes :
+     * 1) l'état renvoyé avec la confirmation de la commande ;
+     * 2) sinon, un statut interrogé directement au véhicule.
+     * Lance une erreur si l'auto n'est pas dans l'état demandé.
+     */
+    private fun verifyLock(c: CarInfo, r: BluelinkCanada.CommandResult, wantLocked: Boolean, mfa: MfaHandler?) {
+        if (!r.confirmed) throw BlException("Commande envoyée, mais le véhicule n'a pas confirmé à temps.")
+        val prev = status()
+        val reported = r.vehicle?.let { bool(it.v("doorLock")) }
+        CrashLog.step("Verrouillage : état renvoyé par la commande = $reported")
+        var st = r.vehicle?.let { StatusParser.parse(it, null, prev, true) } ?: prev
+        if (reported == null || reported != wantLocked) {
+            // Pas d'état fiable dans la réponse : on interroge le véhicule.
+            Thread.sleep(3000)
+            st = api.status(c.id, true, st, mfa)
+            CrashLog.step("Verrouillage : état vérifié au véhicule = ${st.locked}")
+        } else if (st != null) {
+            st = st.copy(locked = reported)
+        }
+        if (st != null) saveStatus(st.copy(lastCheck = System.currentTimeMillis()))
+        if (st == null || st.locked != wantLocked) {
+            val reasons = mutableListOf<String>()
+            if (st?.doorsOpen == true) reasons += "une portière est ouverte"
+            if (st?.trunkOpen == true) reasons += "le coffre est ouvert"
+            if (st?.hoodOpen == true) reasons += "le capot est ouvert"
+            if (st?.engine == true) reasons += "le moteur est en marche"
+            val why = if (reasons.isNotEmpty()) " (" + reasons.joinToString(", ") + ")"
+            else " (portière mal fermée ou clé détectée dans l'auto ?)"
+            throw BlException(
+                if (wantLocked) "Hyundai a accepté la commande, mais le véhicule est toujours déverrouillé$why."
+                else "Hyundai a accepté la commande, mais le véhicule est toujours verrouillé."
+            )
+        }
+    }
+
     @Synchronized
     fun lock(mfa: MfaHandler?) {
         val c = car(mfa)
-        applyResult(api.lock(c.id, mfa)) { it.copy(locked = true) }
+        verifyLock(c, api.lock(c.id, mfa), true, mfa)
     }
 
     @Synchronized
     fun unlock(mfa: MfaHandler?) {
         val c = car(mfa)
-        applyResult(api.unlock(c.id, mfa)) { it.copy(locked = false) }
+        verifyLock(c, api.unlock(c.id, mfa), false, mfa)
     }
 
     @Synchronized
@@ -169,10 +205,24 @@ object Car {
             when {
                 st.locked -> WalkResult.AlreadyLocked
                 st.climate || st.engine -> WalkResult.Running
+                st.doorsOpen || st.trunkOpen || st.hoodOpen -> WalkResult.Failed(
+                    "Le véhicule est déverrouillé, mais " + listOfNotNull(
+                        "une portière".takeIf { st.doorsOpen },
+                        "le coffre".takeIf { st.trunkOpen },
+                        "le capot".takeIf { st.hoodOpen },
+                    ).joinToString(", ") + " semble ouvert : impossible de verrouiller."
+                )
                 mode == WalkMode.DRY_RUN -> WalkResult.WouldLock
                 mode == WalkMode.CHECK_ONLY -> WalkResult.NeedsConfirm
                 else -> {
-                    applyResult(api.lock(c.id, null)) { it.copy(locked = true) }
+                    try {
+                        verifyLock(c, api.lock(c.id, null), true, null)
+                    } catch (first: BlException) {
+                        // Une 2e tentative après 20 s (ex. portière qui finissait de se fermer).
+                        CrashLog.step("Verrouillage auto : 1re tentative échouée, nouvel essai")
+                        Thread.sleep(20_000)
+                        verifyLock(c, api.lock(c.id, null), true, null)
+                    }
                     WalkResult.Locked
                 }
             }

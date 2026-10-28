@@ -165,7 +165,7 @@ class WalkAwayService : Service() {
         val pm = getSystemService(PowerManager::class.java)
         wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "bluelock:walkaway").apply {
             setReferenceCounted(false)
-            acquire((cfg.walkDelaySec + 240) * 1000L)
+            acquire((cfg.walkDelaySec + 600) * 1000L)
         }
         val prefix = if (dry) "[Test] " else ""
 
