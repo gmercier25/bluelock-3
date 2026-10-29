@@ -16,7 +16,7 @@ Aucune bibliothèque tierce : seulement le SDK Android.
 - **Verrouillage auto** : à la déconnexion du Bluetooth de l'auto → compte à rebours annulable →
   vérifie que l'auto est déverrouillée et arrêtée → verrouille. Annulé si le Bluetooth se reconnecte.
   Mode « confirmation » possible (ne verrouille jamais sans ton accord). Bouton de test sans verrouillage.
-- Widget d'écran d'accueil (4×2) avec boutons Verrouiller et Actualiser.
+- Widgets : complet (4×2), compact (2×2), commandes (4×1) et bouton de verrouillage (1×1).
 - Tuile des réglages rapides « Verrouiller l'auto ».
 - Raccourcis par appui long sur l'icône : Verrouiller, Déverrouiller (avec confirmation), Chauffer, Refroidir.
 - Code de vérification Hyundai (courriel ou texto) géré à la connexion.

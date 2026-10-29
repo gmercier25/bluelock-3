@@ -130,6 +130,14 @@ object Widgets {
         } catch (_: Exception) {
         }
         try {
+            MoreWidgets.updateAll(ctx)
+        } catch (_: Exception) {
+        }
+        try {
+            MoreWidgets.updateAll(ctx)
+        } catch (_: Exception) {
+        }
+        try {
             TileService.requestListeningState(ctx, ComponentName(ctx, LockTileService::class.java))
         } catch (_: Exception) {
         }
@@ -179,13 +187,13 @@ class StatusRefreshJob : JobService() {
             val js = ctx.getSystemService(JobScheduler::class.java) ?: return
             if (js.getPendingJob(OLD_JOB_ID) != null) js.cancel(OLD_JOB_ID)
             if (js.getPendingJob(JOB_ID) != null) return
-            js.schedule(
+            try { js.schedule(
                 JobInfo.Builder(JOB_ID, ComponentName(ctx, StatusRefreshJob::class.java))
                     .setPeriodic(15 * 60 * 1000L)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .setPersisted(true)
                     .build()
-            )
+            ) } catch (e: Exception) { CrashLog.step("Planification impossible : ${e.javaClass.simpleName}") }
         }
     }
 }

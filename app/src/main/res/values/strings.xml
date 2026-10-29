@@ -65,4 +65,8 @@
     <string name="walk_warning">⚠ Garde toujours ta clé sur toi : si le téléphone reste dans l\'auto quand elle s\'éteint, elle peut se verrouiller.</string>
     <string name="save">Enregistrer</string>
     <string name="reset_all">Tout effacer de ce téléphone</string>
+    <string name="w_stop">Arrêter</string>
+    <string name="w_compact_desc">BlueLock compact : essence, autonomie et verrouillage</string>
+    <string name="w_actions_desc">BlueLock commandes : verrouiller, déverrouiller, chauffer, refroidir</string>
+    <string name="w_lock_desc">BlueLock bouton : état et verrouillage d\'un geste</string>
 </resources>

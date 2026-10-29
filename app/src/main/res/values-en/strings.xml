@@ -65,4 +65,8 @@
     <string name="walk_warning">⚠ Always keep your key with you: if your phone stays in the car when it turns off, the car may lock.</string>
     <string name="save">Save</string>
     <string name="reset_all">Erase everything from this phone</string>
+    <string name="w_stop">Stop</string>
+    <string name="w_compact_desc">BlueLock compact: fuel, range and lock</string>
+    <string name="w_actions_desc">BlueLock controls: lock, unlock, warm up, cool down</string>
+    <string name="w_lock_desc">BlueLock button: status and one-tap lock</string>
 </resources>

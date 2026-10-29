@@ -218,13 +218,17 @@ object TripLog {
 
     private fun scheduleFinish(ctx: Context) {
         val js = ctx.getSystemService(JobScheduler::class.java) ?: return
-        js.schedule(
+        try {
+            js.schedule(
             JobInfo.Builder(JOB_ID, ComponentName(ctx, TripFinishJob::class.java))
                 .setMinimumLatency(FINISH_DELAY_MS)
                 .setOverrideDeadline(FINISH_DELAY_MS + 15 * 60 * 1000L)
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .build()
         )
+        } catch (e: Exception) {
+            CrashLog.step("Trajet : planification impossible")
+        }
     }
 
     private fun cancelFinish(ctx: Context) {
