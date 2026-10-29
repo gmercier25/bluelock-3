@@ -36,7 +36,7 @@
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="À propos"
+                android:contentDescription="@string/about"
                 android:src="@drawable/ic_info"
                 android:tint="?android:attr/textColorSecondary" />
         </LinearLayout>
@@ -74,15 +74,17 @@
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:adjustViewBounds="true"
-            android:contentDescription="Véhicule"
+            android:contentDescription="@string/vehicle"
             android:scaleType="fitCenter" />
 
         <!-- Actions -->
         <include android:id="@+id/rowCharge" layout="@layout/row_item" />
         <include android:id="@+id/rowClimate" layout="@layout/row_item" />
+        <include android:id="@+id/rowSchedule" layout="@layout/row_item" />
         <include android:id="@+id/rowLock" layout="@layout/row_item" />
         <include android:id="@+id/rowChargeLimit" layout="@layout/row_item" />
         <include android:id="@+id/rowStatus" layout="@layout/row_item" />
+        <include android:id="@+id/rowTrip" layout="@layout/row_item" />
         <include android:id="@+id/rowOdometer" layout="@layout/row_item" />
         <include android:id="@+id/row12v" layout="@layout/row_item" />
         <include android:id="@+id/rowLocation" layout="@layout/row_item" />
@@ -120,7 +122,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Réglages"
+                android:text="@string/settings"
                 android:textColor="?android:attr/textColorPrimary"
                 android:textSize="20sp"
                 android:textStyle="bold" />

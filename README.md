@@ -20,6 +20,11 @@ Aucune bibliothèque tierce : seulement le SDK Android.
 - Tuile des réglages rapides « Verrouiller l'auto ».
 - Raccourcis par appui long sur l'icône : Verrouiller, Déverrouiller (avec confirmation), Chauffer, Refroidir.
 - Code de vérification Hyundai (courriel ou texto) géré à la connexion.
+- Trajets et consommation moyenne calculés sur le téléphone (Bluetooth + odomètre + niveau d'essence).
+- Démarrage programmé (heure, jours, selon la météo Open-Meteo), avec « sauter le prochain ».
+- Position de stationnement (GPS du téléphone à la sortie de l'auto) et itinéraire à pied.
+- Alertes : auto restée déverrouillée, portière/coffre/capot ouvert, batterie 12 V faible.
+- Bilingue : français / English / automatique (Réglages → Langue).
 
 ## Obtenir l'APK (sans rien installer sur ton PC)
 

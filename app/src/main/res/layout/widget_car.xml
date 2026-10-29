@@ -103,7 +103,7 @@
             android:layout_height="32dp"
             android:layout_marginStart="6dp"
             android:background="@drawable/widget_btn_bg"
-            android:contentDescription="Actualiser"
+            android:contentDescription="@null"
             android:padding="7dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_refresh_widget" />
@@ -114,7 +114,7 @@
             android:layout_height="32dp"
             android:layout_marginStart="8dp"
             android:background="@drawable/widget_btn_bg"
-            android:contentDescription="Verrouiller"
+            android:contentDescription="@string/sc_lock"
             android:padding="7dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_lock_widget" />

@@ -88,39 +88,39 @@ object BuildInfo {
 class CrashActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val text = CrashLog.read(this) ?: "Aucun plantage enregistré."
+        val text = CrashLog.read(this) ?: tr("Aucun plantage enregistré.", "No crash recorded.")
         val pad = (16 * resources.displayMetrics.density).toInt()
 
         val title = TextView(this).apply {
-            this.text = "BlueLock a planté"
+            this.text = tr("BlueLock a planté", "BlueLock crashed")
             textSize = 24f
             setPadding(0, 0, 0, pad / 2)
         }
         val hint = TextView(this).apply {
-            this.text = "Touche « Copier » puis colle le texte dans la conversation avec Claude."
+            this.text = tr("Touche « Copier » puis colle le texte dans la conversation avec Claude.", "Tap “Copy”, then paste the text in your conversation with Claude.")
             setPadding(0, 0, 0, pad)
         }
         val copy = Button(this).apply {
-            this.text = "Copier l'erreur"
+            this.text = tr("Copier l'erreur", "Copy error")
             setOnClickListener {
                 val cm = getSystemService(ClipboardManager::class.java)
                 cm.setPrimaryClip(ClipData.newPlainText("BlueLock crash", text))
-                Toast.makeText(this@CrashActivity, "Copié", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@CrashActivity, tr("Copié", "Copied"), Toast.LENGTH_SHORT).show()
             }
         }
         val share = Button(this).apply {
-            this.text = "Partager"
+            this.text = tr("Partager", "Share")
             setOnClickListener {
                 startActivity(
                     Intent.createChooser(
                         Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text),
-                        "Partager l'erreur"
+                        tr("Partager l'erreur", "Share error")
                     )
                 )
             }
         }
         val cont = Button(this).apply {
-            this.text = "Continuer"
+            this.text = tr("Continuer", "Continue")
             setOnClickListener {
                 CrashLog.clear(this@CrashActivity)
                 startActivity(Intent(this@CrashActivity, MainActivity::class.java))

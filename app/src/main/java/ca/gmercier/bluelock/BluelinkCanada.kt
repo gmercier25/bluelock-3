@@ -101,7 +101,7 @@ class BluelinkCanada {
             }
             return Resp(code, json, hdrs)
         } catch (e: IOException) {
-            throw BlException("Erreur réseau : ${e.message ?: e.javaClass.simpleName}")
+            throw BlException(tr("Erreur réseau : ", "Network error: ") + (e.message ?: e.javaClass.simpleName))
         } finally {
             conn.disconnect()
         }
@@ -123,8 +123,8 @@ class BluelinkCanada {
         return when {
             desc.isNotBlank() && code.isNotBlank() -> "$desc ($code)"
             desc.isNotBlank() -> desc
-            j.has("_raw") -> "Réponse inattendue (HTTP ${j.optInt("_http")})"
-            else -> "Réponse inattendue du serveur Hyundai"
+            j.has("_raw") -> tr("Réponse inattendue (HTTP ", "Unexpected response (HTTP ") + j.optInt("_http") + ")"
+            else -> tr("Réponse inattendue du serveur Hyundai", "Unexpected response from the Hyundai server")
         }
     }
 
@@ -142,7 +142,7 @@ class BluelinkCanada {
 
     private fun saveTokens(tok: JSONObject, cookie: String): Tokens {
         val access = tok.optString("accessToken")
-        if (access.isBlank()) throw BlException("Jeton d'accès manquant dans la réponse Hyundai")
+        if (access.isBlank()) throw BlException(tr("Jeton d'accès manquant dans la réponse Hyundai", "Access token missing from the Hyundai response"))
         val t = Tokens(
             access = access,
             refresh = tok.optString("refreshToken"),
@@ -185,7 +185,7 @@ class BluelinkCanada {
     fun login(mfa: MfaHandler?): Tokens {
         CrashLog.step("API : connexion")
         val cfg = Config.load()
-        if (!cfg.hasCredentials()) throw NeedLoginException("Configure ton compte MyHyundai dans les réglages.")
+        if (!cfg.hasCredentials()) throw NeedLoginException(tr("Configure ton compte MyHyundai dans les réglages.", "Set up your MyHyundai account in Settings."))
         val cookie = cfCookie()
         val r = noAuthPost(
             "v2/login",
@@ -193,19 +193,19 @@ class BluelinkCanada {
             if (cookie.isNotEmpty()) mapOf("Cookie" to cookie) else emptyMap()
         )
         if (valid(r.json)) {
-            val tok = r.json.o("result").o("token") ?: throw BlException("Réponse de connexion incomplète")
+            val tok = r.json.o("result").o("token") ?: throw BlException(tr("Réponse de connexion incomplète", "Incomplete login response"))
             return saveTokens(tok, cookie)
         }
         val errCode = r.json.optJSONObject("error")?.optString("errorCode")
         CrashLog.step("API : réponse connexion code=${r.code} erreur=$errCode")
         if (errCode == "7110") {
             if (mfa == null) {
-                throw NeedLoginException("Hyundai demande un code de vérification. Ouvre BlueLock pour te reconnecter.")
+                throw NeedLoginException(tr("Hyundai demande un code de vérification. Ouvre BlueLock pour te reconnecter.", "Hyundai is asking for a verification code. Open BlueLock to sign in again."))
             }
             return mfaFlow(cfg, cookie, mfa)
         }
         regenerateDeviceId()
-        throw BlException("Connexion refusée : ${errorText(r.json)}")
+        throw BlException(tr("Connexion refusée : ", "Sign-in refused: ") + errorText(r.json))
     }
 
     private fun mfaFlow(cfg: Config, cookie: String, mfa: MfaHandler): Tokens {
@@ -214,7 +214,7 @@ class BluelinkCanada {
             "mfa/selverifmeth",
             JSONObject().put("mfaApiCode", api).put("userAccount", cfg.username)
         )
-        if (!valid(sel.json)) throw BlException("Vérification impossible : ${errorText(sel.json)}")
+        if (!valid(sel.json)) throw BlException(tr("Vérification impossible : ", "Verification failed: ") + errorText(sel.json))
         val res = sel.json.o("result") ?: JSONObject()
         val email = res.optJSONArray("emailList")?.optString(0)?.ifBlank { null } ?: cfg.username
         val phone = res.optString("userPhone", "").ifBlank { null }
@@ -233,12 +233,12 @@ class BluelinkCanada {
         val otpKey = send.json.o("result")?.optString("otpKey").orEmpty()
         if (!valid(send.json) || otpKey.isBlank()) {
             regenerateDeviceId()
-            throw BlException("Envoi du code impossible : ${errorText(send.json)}")
+            throw BlException(tr("Envoi du code impossible : ", "Could not send the code: ") + errorText(send.json))
         }
 
         CrashLog.step("API : code envoyé (sms=$sms)")
         val code = mfa.askCode(if (sms) phone!! else email)?.trim()
-        if (code.isNullOrBlank()) throw BlException("Vérification annulée.")
+        if (code.isNullOrBlank()) throw BlException(tr("Vérification annulée.", "Verification cancelled."))
 
         val v = noAuthPost(
             "mfa/validateotp",
@@ -249,7 +249,7 @@ class BluelinkCanada {
         val validationKey = vr?.optString("otpValidationKey").orEmpty()
         if (!valid(v.json) || validationKey.isBlank() || bool(vr.v("verifiedOtp")) != true) {
             regenerateDeviceId()
-            throw BlException("Code de vérification invalide.")
+            throw BlException(tr("Code de vérification invalide.", "Invalid verification code."))
         }
 
         CrashLog.step("API : code validé")
@@ -261,7 +261,7 @@ class BluelinkCanada {
         val tok = g.json.o("result").o("token")
         if (!valid(g.json) || tok == null) {
             regenerateDeviceId()
-            throw BlException("Échec de la création du jeton : ${errorText(g.json)}")
+            throw BlException(tr("Échec de la création du jeton : ", "Token creation failed: ") + errorText(g.json))
         }
         CrashLog.step("API : jeton MFA obtenu")
         return saveTokens(tok, cookie)
@@ -296,10 +296,10 @@ class BluelinkCanada {
     fun vehicle(preferredVin: String?, mfa: MfaHandler?): CarInfo {
         CrashLog.step("API : liste des véhicules")
         val r = authed("vhcllst", null, emptyMap(), mfa)
-        if (!valid(r.json)) throw BlException("Impossible d'obtenir la liste des véhicules : ${errorText(r.json)}")
+        if (!valid(r.json)) throw BlException(tr("Impossible d'obtenir la liste des véhicules : ", "Could not get the vehicle list: ") + errorText(r.json))
         val list: JSONArray = r.json.o("result")?.optJSONArray("vehicles")
-            ?: throw BlException("Aucun véhicule sur ce compte.")
-        if (list.length() == 0) throw BlException("Aucun véhicule sur ce compte.")
+            ?: throw BlException(tr("Aucun véhicule sur ce compte.", "No vehicle on this account."))
+        if (list.length() == 0) throw BlException(tr("Aucun véhicule sur ce compte.", "No vehicle on this account."))
         var v = list.getJSONObject(0)
         if (!preferredVin.isNullOrBlank()) {
             for (i in 0 until list.length()) {
@@ -317,10 +317,11 @@ class BluelinkCanada {
             modelYear = v.optString("modelYear"),
             color = v.optString("exteriorColor"),
             trim = v.optString("trim"),
+            fuelKind = v.optString("fuelKindCode"),
         )
         // Sélectionne le véhicule côté serveur (comme l'app officielle).
         val s = authed("vhcllst", JSONObject().put("vehicleId", info.id), emptyMap(), mfa)
-        if (!valid(s.json)) throw BlException("Impossible de sélectionner le véhicule : ${errorText(s.json)}")
+        if (!valid(s.json)) throw BlException(tr("Impossible de sélectionner le véhicule : ", "Could not select the vehicle: ") + errorText(s.json))
         return info
     }
 
@@ -336,8 +337,8 @@ class BluelinkCanada {
         } else {
             authed("sltvhcl", JSONObject().put("vehicleId", id), mapOf("Vehicleid" to id), mfa)
         }
-        if (!valid(r.json)) throw BlException("Statut indisponible : ${errorText(r.json)}")
-        val res = r.json.o("result") ?: throw BlException("Statut vide")
+        if (!valid(r.json)) throw BlException(tr("Statut indisponible : ", "Status unavailable: ") + errorText(r.json))
+        val res = r.json.o("result") ?: throw BlException(tr("Statut vide", "Empty status"))
         val s = res.o("status") ?: JSONObject()
         val odo = if (force) num(s.v("odometer")) else num(res.o("vehicle").v("odometer"))
         CrashLog.step("API : analyse du statut")
@@ -355,7 +356,7 @@ class BluelinkCanada {
         val pin = Config.load().pin
         val r = authed("vrfypin", JSONObject().put("pin", pin), emptyMap(), mfa)
         val p = r.json.o("result")?.optString("pAuth").orEmpty()
-        if (!valid(r.json) || p.isBlank()) throw BlException("NIP refusé : ${errorText(r.json)}")
+        if (!valid(r.json) || p.isBlank()) throw BlException(tr("NIP refusé : ", "PIN refused: ") + errorText(r.json))
         return p
     }
 
@@ -363,7 +364,7 @@ class BluelinkCanada {
         val pauth = pAuth(mfa)
         payload.put("pin", Config.load().pin)
         val r = authed(path, payload, mapOf("Vehicleid" to id, "Pauth" to pauth), mfa)
-        if (!valid(r.json)) throw RejectedException("Commande refusée : ${errorText(r.json)}")
+        if (!valid(r.json)) throw RejectedException(tr("Commande refusée : ", "Command refused: ") + errorText(r.json))
         val tx = r.header("transactionId") ?: return CommandResult(false, null)
         return poll(id, pauth, tx, mfa)
     }
@@ -374,7 +375,7 @@ class BluelinkCanada {
                 "rmtsts", null,
                 mapOf("Vehicleid" to id, "Pauth" to pauth, "TransactionId" to tx), mfa
             )
-            if (!valid(r.json)) throw BlException("Suivi de la commande impossible : ${errorText(r.json)}")
+            if (!valid(r.json)) throw BlException(tr("Suivi de la commande impossible : ", "Could not track the command: ") + errorText(r.json))
             val res = r.json.o("result")
             if (res.o("transaction")?.optString("apiResult") == "C") {
                 return CommandResult(true, res.o("vehicle"))
@@ -386,17 +387,55 @@ class BluelinkCanada {
 
     fun lock(id: String, mfa: MfaHandler?) = command(id, "drlck", JSONObject(), mfa)
     fun unlock(id: String, mfa: MfaHandler?) = command(id, "drulck", JSONObject(), mfa)
-    fun climateOff(id: String, mfa: MfaHandler?) = command(id, "evc/rfoff", JSONObject(), mfa)
+    /** Électrique / rechargeable : evc/rfoff. Essence / hybride : rmtstp. Essaie l'autre en cas de refus. */
+    fun climateOff(id: String, electrified: Boolean, mfa: MfaHandler?): CommandResult {
+        val (first, second) = if (electrified) "evc/rfoff" to "rmtstp" else "rmtstp" to "evc/rfoff"
+        return try {
+            command(id, first, JSONObject(), mfa)
+        } catch (e: RejectedException) {
+            command(id, second, JSONObject(), mfa)
+        }
+    }
     fun startCharge(id: String, mfa: MfaHandler?) = command(id, "evc/rcstrt", JSONObject(), mfa)
     fun stopCharge(id: String, mfa: MfaHandler?) = command(id, "evc/rcstp", JSONObject(), mfa)
 
-    fun climateOn(id: String, req: ClimateRequest, mfa: MfaHandler?): CommandResult {
-        return try {
-            command(id, "evc/rfon", climatePayload(req, "hvacInfo"), mfa)
-        } catch (e: RejectedException) {
-            // Véhicules récents : autre nom de champ (comme dans Bluelocke).
-            command(id, "evc/rfon", climatePayload(req, "remoteControl"), mfa)
+    /**
+     * Démarrage à distance avec climatisation.
+     * Essence / hybride : rmtstrt (format « setting »). Électrique / rechargeable : evc/rfon.
+     * En cas de refus, on essaie les autres formats connus.
+     */
+    fun climateOn(id: String, req: ClimateRequest, electrified: Boolean, mfa: MfaHandler?): CommandResult {
+        val attempts = mutableListOf<Pair<String, () -> JSONObject>>()
+        val ice = "rmtstrt" to { iceClimatePayload(req) }
+        val ev1 = "evc/rfon" to { climatePayload(req, "hvacInfo") }
+        val ev2 = "evc/rfon" to { climatePayload(req, "remoteControl") }
+        if (electrified) attempts += listOf(ev1, ev2, ice) else attempts += listOf(ice, ev1, ev2)
+        var last: RejectedException? = null
+        for ((path, payload) in attempts) {
+            try {
+                CrashLog.step("Climatisation : essai $path")
+                return command(id, path, payload(), mfa)
+            } catch (e: RejectedException) {
+                last = e
+            }
         }
+        throw last ?: RejectedException(tr("Commande refusée", "Command refused"))
+    }
+
+    private fun iceClimatePayload(req: ClimateRequest): JSONObject {
+        val setting = JSONObject()
+            .put("airCtrl", 1)
+            .put("defrost", req.frontDefrost)
+            .put("heating1", heatingValue(req.rearDefrost, req.steering))
+            .put("igniOnDuration", req.durationMin)
+            .put("ims", 0)
+            .put("airTemp", JSONObject().put("value", tempHex(req.temp)).put("unit", 0).put("hvacTempType", 0))
+            .put(
+                "seatHeaterVentCMD",
+                JSONObject().put("drvSeatOptCmd", req.seatDriver).put("astSeatOptCmd", req.seatPassenger)
+                    .put("rlSeatOptCmd", req.seatRearLeft).put("rrSeatOptCmd", req.seatRearRight)
+            )
+        return JSONObject().put("setting", setting)
     }
 
     private fun climatePayload(req: ClimateRequest, key: String): JSONObject {
@@ -429,7 +468,7 @@ class BluelinkCanada {
         val lat = num(c.v("lat"))
         val lon = num(c.v("lon"))
         if (!valid(r.json) || lat == null || lon == null) {
-            throw BlException("Position indisponible : ${errorText(r.json)}")
+            throw BlException(tr("Position indisponible : ", "Location unavailable: ") + errorText(r.json))
         }
         return lat to lon
     }

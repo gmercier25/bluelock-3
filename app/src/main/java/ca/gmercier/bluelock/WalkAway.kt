@@ -22,7 +22,7 @@ class WalkAwayReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
         Car.init(ctx)
         val cfg = Config.load()
-        if (!cfg.walkEnabled || cfg.walkDeviceAddress.isBlank()) return
+        if (cfg.walkDeviceAddress.isBlank()) return
         val dev: BluetoothDevice? = if (Build.VERSION.SDK_INT >= 33) {
             intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
         } else {
@@ -37,8 +37,22 @@ class WalkAwayReceiver : BroadcastReceiver() {
         if (!address.equals(cfg.walkDeviceAddress, ignoreCase = true)) return
 
         when (intent.action) {
-            BluetoothDevice.ACTION_ACL_DISCONNECTED -> WalkAwayService.start(ctx, dryRun = false)
-            BluetoothDevice.ACTION_ACL_CONNECTED -> WalkAwayService.reconnected(ctx)
+            BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
+                try { TripLog.onDisconnect(ctx) } catch (_: Exception) {}
+                if (cfg.walkEnabled) WalkAwayService.start(ctx, dryRun = false)
+                if (cfg.parkEnabled) {
+                    val pr = goAsync()
+                    try {
+                        Parking.capture(ctx) { try { pr.finish() } catch (_: Exception) {} }
+                    } catch (_: Exception) {
+                        pr.finish()
+                    }
+                }
+            }
+            BluetoothDevice.ACTION_ACL_CONNECTED -> {
+                try { TripLog.onConnect(ctx) } catch (_: Exception) {}
+                if (cfg.walkEnabled) WalkAwayService.reconnected(ctx)
+            }
         }
     }
 }
@@ -76,7 +90,7 @@ class WalkAwayService : Service() {
                         Notifs.ID_WALK_RESULT,
                         Notifs.builder(
                             ctx, Notifs.CH_WALK, Car.displayName(),
-                            "Tu t'es éloigné du véhicule. Touche ici pour le verrouiller."
+                            tr("Tu t'es éloigné du véhicule. Touche ici pour le verrouiller.", "You walked away from the vehicle. Tap here to lock it.")
                         ).setContentIntent(pi).setAutoCancel(true).build()
                     )
                 } catch (_: SecurityException) {
@@ -145,7 +159,7 @@ class WalkAwayService : Service() {
                 proceed(if (dryRun) Car.WalkMode.DRY_RUN else Car.WalkMode.LOCK)
             }
             ACTION_RECONNECTED -> if (phase == Phase.COUNTDOWN || phase == Phase.CONFIRM) {
-                finish("Verrouillage auto annulé", "Le téléphone s'est reconnecté au véhicule.")
+                finish(tr("Verrouillage auto annulé", "Auto-lock cancelled"), tr("Le téléphone s'est reconnecté au véhicule.", "Your phone reconnected to the vehicle."))
             }
         }
         if (phase == Phase.IDLE && !running) stopSelf()
@@ -171,7 +185,7 @@ class WalkAwayService : Service() {
 
         if (cfg.walkConfirm) {
             goForeground(
-                Notifs.builder(this, Notifs.CH_WALK, "$prefix$name", "Tu t'éloignes… vérification du véhicule.", R.drawable.ic_walk)
+                Notifs.builder(this, Notifs.CH_WALK, "$prefix$name", tr("Tu t'éloignes… vérification du véhicule.", "Walking away… checking the vehicle."), R.drawable.ic_walk)
                     .setOngoing(true).setProgress(0, 0, true).build()
             )
             proceed(Car.WalkMode.CHECK_ONLY)
@@ -182,9 +196,9 @@ class WalkAwayService : Service() {
         phase = Phase.COUNTDOWN
         val deadline = System.currentTimeMillis() + delayMs
         val n = Notifs.builder(
-            this, Notifs.CH_WALK, "${prefix}Verrouillage auto — $name",
-            if (dry) "Simulation : vérification à la fin du compte à rebours (aucun verrouillage)."
-            else "Le véhicule sera verrouillé à la fin du compte à rebours s'il est déverrouillé et arrêté.",
+            this, Notifs.CH_WALK, prefix + tr("Verrouillage auto — ", "Auto-lock — ") + name,
+            if (dry) tr("Simulation : vérification à la fin du compte à rebours (aucun verrouillage).", "Simulation: checks at the end of the countdown (no lock sent).")
+            else tr("Le véhicule sera verrouillé à la fin du compte à rebours s'il est déverrouillé et arrêté.", "The vehicle will be locked when the countdown ends if it is unlocked and off."),
             R.drawable.ic_walk
         )
             .setOngoing(true)
@@ -193,8 +207,8 @@ class WalkAwayService : Service() {
             .setUsesChronometer(true)
             .setChronometerCountDown(true)
             .setCategory(android.app.Notification.CATEGORY_STATUS)
-            .addAction(android.app.Notification.Action.Builder(null, "Annuler", pi(ACTION_CANCEL, 1)).build())
-            .addAction(android.app.Notification.Action.Builder(null, "Verrouiller maintenant", pi(ACTION_LOCK_NOW, 2)).build())
+            .addAction(android.app.Notification.Action.Builder(null, tr("Annuler", "Cancel"), pi(ACTION_CANCEL, 1)).build())
+            .addAction(android.app.Notification.Action.Builder(null, tr("Verrouiller maintenant", "Lock now"), pi(ACTION_LOCK_NOW, 2)).build())
             .build()
         goForeground(n)
         main.postDelayed(fire, delayMs)
@@ -207,7 +221,7 @@ class WalkAwayService : Service() {
         show(
             Notifs.builder(
                 this, Notifs.CH_WALK, name,
-                if (mode == Car.WalkMode.LOCK) "Vérification puis verrouillage…" else "Vérification du véhicule…",
+                if (mode == Car.WalkMode.LOCK) tr("Vérification puis verrouillage…", "Checking, then locking…") else tr("Vérification du véhicule…", "Checking the vehicle…"),
                 R.drawable.ic_walk
             ).setOngoing(true).setProgress(0, 0, true).build()
         )
@@ -222,24 +236,24 @@ class WalkAwayService : Service() {
         val cfg = Config.load()
         val prefix = if (dryRun) "[Test] " else ""
         when (r) {
-            is WalkResult.Locked -> finish("🔒 $name verrouillé", "Verrouillé automatiquement quand tu t'es éloigné.")
+            is WalkResult.Locked -> finish("🔒 " + name + tr(" verrouillé", " locked"), tr("Verrouillé automatiquement quand tu t'es éloigné.", "Locked automatically when you walked away."))
             is WalkResult.AlreadyLocked ->
-                if (cfg.walkNotifyAlreadyLocked || dryRun) finish("$prefix$name déjà verrouillé ✓", "Aucune action nécessaire.")
+                if (cfg.walkNotifyAlreadyLocked || dryRun) finish(prefix + name + tr(" déjà verrouillé ✓", " already locked ✓"), tr("Aucune action nécessaire.", "Nothing to do."))
                 else finish(null, null)
-            is WalkResult.Running -> finish("$prefix$name en marche", "Moteur ou climatisation en marche : pas de verrouillage automatique.")
-            is WalkResult.WouldLock -> finish("[Test] Verrouillage auto OK", "Le véhicule est déverrouillé et arrêté : il aurait été verrouillé.")
-            is WalkResult.Failed -> finish("${prefix}Verrouillage auto impossible", r.message)
+            is WalkResult.Running -> finish(prefix + name + tr(" en marche", " running"), tr("Moteur ou climatisation en marche : pas de verrouillage automatique.", "Engine or climate running: no automatic lock."))
+            is WalkResult.WouldLock -> finish(tr("[Test] Verrouillage auto OK", "[Test] Auto-lock OK"), tr("Le véhicule est déverrouillé et arrêté : il aurait été verrouillé.", "The vehicle is unlocked and off: it would have been locked."))
+            is WalkResult.Failed -> finish(prefix + tr("Verrouillage auto impossible", "Auto-lock failed"), r.message)
             is WalkResult.NeedsConfirm -> {
                 phase = Phase.CONFIRM
                 show(
                     Notifs.builder(
-                        this, Notifs.CH_WALK, "$prefix$name est déverrouillé",
-                        "Tu t'es éloigné du véhicule. Le verrouiller ?", R.drawable.ic_lock_open
+                        this, Notifs.CH_WALK, prefix + name + tr(" est déverrouillé", " is unlocked"),
+                        tr("Tu t'es éloigné du véhicule. Le verrouiller ?", "You walked away from the vehicle. Lock it?"), R.drawable.ic_lock_open
                     )
                         .setOngoing(true)
                         .setCategory(android.app.Notification.CATEGORY_REMINDER)
-                        .addAction(android.app.Notification.Action.Builder(null, "Verrouiller", pi(ACTION_LOCK_NOW, 3)).build())
-                        .addAction(android.app.Notification.Action.Builder(null, "Ignorer", pi(ACTION_CANCEL, 4)).build())
+                        .addAction(android.app.Notification.Action.Builder(null, tr("Verrouiller", "Lock"), pi(ACTION_LOCK_NOW, 3)).build())
+                        .addAction(android.app.Notification.Action.Builder(null, tr("Ignorer", "Dismiss"), pi(ACTION_CANCEL, 4)).build())
                         .build()
                 )
                 main.postDelayed(confirmTimeout, 15 * 60 * 1000L)

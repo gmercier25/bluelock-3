@@ -22,21 +22,21 @@ class ShortcutActivity : Activity() {
         super.onCreate(savedInstanceState)
         Car.init(this)
         val (cmd, label) = when (intent?.action) {
-            ACTION_LOCK -> CarCommandService.LOCK to "Verrouillage envoyé…"
-            ACTION_WARM -> CarCommandService.WARM to "Chauffage envoyé…"
-            ACTION_COOL -> CarCommandService.COOL to "Climatisation envoyée…"
-            ACTION_CLIMATE_OFF -> CarCommandService.CLIMATE_OFF to "Arrêt de la climatisation envoyé…"
+            ACTION_LOCK -> CarCommandService.LOCK to tr("Verrouillage envoyé…", "Lock sent…")
+            ACTION_WARM -> CarCommandService.WARM to tr("Chauffage envoyé…", "Heat sent…")
+            ACTION_COOL -> CarCommandService.COOL to tr("Climatisation envoyée…", "A/C sent…")
+            ACTION_CLIMATE_OFF -> CarCommandService.CLIMATE_OFF to tr("Arrêt de la climatisation envoyé…", "Climate stop sent…")
             else -> null to null
         }
         if (cmd != null) {
             if (!Config.load().hasCredentials()) {
-                Toast.makeText(this, "Configure d'abord ton compte dans BlueLock", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, tr("Configure d'abord ton compte dans BlueLock", "Set up your account in BlueLock first"), Toast.LENGTH_LONG).show()
             } else {
                 try {
                     CarCommandService.start(this, cmd)
                     Toast.makeText(this, label, Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(this, "Impossible : ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, tr("Impossible : ", "Failed: ") + e.message, Toast.LENGTH_LONG).show()
                 }
             }
         }

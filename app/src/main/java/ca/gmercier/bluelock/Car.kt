@@ -41,7 +41,7 @@ object Car {
 
     fun displayName(): String {
         val cfg = Config.load()
-        return cfg.displayName.ifBlank { info()?.displayName ?: "Mon véhicule" }
+        return cfg.displayName.ifBlank { info()?.displayName ?: tr("Mon véhicule", "My vehicle") }
     }
 
     private fun saveStatus(s: CarStatus) {
@@ -90,7 +90,7 @@ object Car {
     // ------------------------------------------------------------ Commandes
 
     private fun applyResult(r: BluelinkCanada.CommandResult, tweak: (CarStatus) -> CarStatus) {
-        if (!r.confirmed) throw BlException("Commande envoyée, mais le véhicule n'a pas confirmé à temps.")
+        if (!r.confirmed) throw BlException(tr("Commande envoyée, mais le véhicule n'a pas confirmé à temps.", "Command sent, but the vehicle did not confirm in time."))
         val prev = status()
         val parsed = r.vehicle?.let { StatusParser.parse(it, null, prev, true) } ?: prev
         if (parsed != null) saveStatus(tweak(parsed.copy(lastCheck = System.currentTimeMillis())))
@@ -103,7 +103,7 @@ object Car {
      * Lance une erreur si l'auto n'est pas dans l'état demandé.
      */
     private fun verifyLock(c: CarInfo, r: BluelinkCanada.CommandResult, wantLocked: Boolean, mfa: MfaHandler?) {
-        if (!r.confirmed) throw BlException("Commande envoyée, mais le véhicule n'a pas confirmé à temps.")
+        if (!r.confirmed) throw BlException(tr("Commande envoyée, mais le véhicule n'a pas confirmé à temps.", "Command sent, but the vehicle did not confirm in time."))
         val prev = status()
         val reported = r.vehicle?.let { bool(it.v("doorLock")) }
         CrashLog.step("Verrouillage : état renvoyé par la commande = $reported")
@@ -119,15 +119,15 @@ object Car {
         if (st != null) saveStatus(st.copy(lastCheck = System.currentTimeMillis()))
         if (st == null || st.locked != wantLocked) {
             val reasons = mutableListOf<String>()
-            if (st?.doorsOpen == true) reasons += "une portière est ouverte"
-            if (st?.trunkOpen == true) reasons += "le coffre est ouvert"
-            if (st?.hoodOpen == true) reasons += "le capot est ouvert"
-            if (st?.engine == true) reasons += "le moteur est en marche"
+            if (st?.doorsOpen == true) reasons += tr("une portière est ouverte", "a door is open")
+            if (st?.trunkOpen == true) reasons += tr("le coffre est ouvert", "the trunk is open")
+            if (st?.hoodOpen == true) reasons += tr("le capot est ouvert", "the hood is open")
+            if (st?.engine == true) reasons += tr("le moteur est en marche", "the engine is running")
             val why = if (reasons.isNotEmpty()) " (" + reasons.joinToString(", ") + ")"
-            else " (portière mal fermée ou clé détectée dans l'auto ?)"
+            else tr(" (portière mal fermée ou clé détectée dans l'auto ?)", " (door not fully closed, or key detected inside?)")
             throw BlException(
-                if (wantLocked) "Hyundai a accepté la commande, mais le véhicule est toujours déverrouillé$why."
-                else "Hyundai a accepté la commande, mais le véhicule est toujours verrouillé."
+                if (wantLocked) tr("Hyundai a accepté la commande, mais le véhicule est toujours déverrouillé", "Hyundai accepted the command, but the vehicle is still unlocked") + why + "."
+                else tr("Hyundai a accepté la commande, mais le véhicule est toujours verrouillé.", "Hyundai accepted the command, but the vehicle is still locked.")
             )
         }
     }
@@ -136,6 +136,7 @@ object Car {
     fun lock(mfa: MfaHandler?) {
         val c = car(mfa)
         verifyLock(c, api.lock(c.id, mfa), true, mfa)
+        if (::appCtx.isInitialized) Alerts.cancelUnlocked(appCtx)
     }
 
     @Synchronized
@@ -147,13 +148,13 @@ object Car {
     @Synchronized
     fun climateOn(req: ClimateRequest, mfa: MfaHandler?) {
         val c = car(mfa)
-        applyResult(api.climateOn(c.id, req, mfa)) { it.copy(climate = true) }
+        applyResult(api.climateOn(c.id, req, c.isElectrified, mfa)) { it.copy(climate = true) }
     }
 
     @Synchronized
     fun climateOff(mfa: MfaHandler?) {
         val c = car(mfa)
-        applyResult(api.climateOff(c.id, mfa)) { it.copy(climate = false) }
+        applyResult(api.climateOff(c.id, c.isElectrified, mfa)) { it.copy(climate = false) }
     }
 
     @Synchronized
@@ -206,11 +207,11 @@ object Car {
                 st.locked -> WalkResult.AlreadyLocked
                 st.climate || st.engine -> WalkResult.Running
                 st.doorsOpen || st.trunkOpen || st.hoodOpen -> WalkResult.Failed(
-                    "Le véhicule est déverrouillé, mais " + listOfNotNull(
-                        "une portière".takeIf { st.doorsOpen },
-                        "le coffre".takeIf { st.trunkOpen },
-                        "le capot".takeIf { st.hoodOpen },
-                    ).joinToString(", ") + " semble ouvert : impossible de verrouiller."
+                    tr("Le véhicule est déverrouillé, mais ", "The vehicle is unlocked, but ") + listOfNotNull(
+                        tr("une portière", "a door").takeIf { st.doorsOpen },
+                        tr("le coffre", "the trunk").takeIf { st.trunkOpen },
+                        tr("le capot", "the hood").takeIf { st.hoodOpen },
+                    ).joinToString(", ") + tr(" semble ouvert : impossible de verrouiller.", " seems open: cannot lock.")
                 )
                 mode == WalkMode.DRY_RUN -> WalkResult.WouldLock
                 mode == WalkMode.CHECK_ONLY -> WalkResult.NeedsConfirm
@@ -281,22 +282,22 @@ object CarImages {
         "https://raw.githubusercontent.com/devindxdev/bluelocke/refs/heads/main/assets/vehicle-images"
 
     val TRIMS = linkedMapOf(
-        "auto" to "Automatique",
+        "auto" to tr("Automatique", "Automatic"),
         "preferred" to "Preferred",
         "xrt" to "XRT",
         "nline" to "N Line",
-        "hybrid-ultimate" to "Hybride Ultimate",
+        "hybrid-ultimate" to tr("Hybride Ultimate", "Hybrid Ultimate"),
     )
 
     val COLORS = linkedMapOf(
-        "auto" to "Automatique",
-        "white" to "Blanc",
-        "black" to "Noir",
-        "grey" to "Gris",
-        "silver" to "Argent",
-        "blue" to "Bleu",
-        "green" to "Vert",
-        "red" to "Rouge",
+        "auto" to tr("Automatique", "Automatic"),
+        "white" to tr("Blanc", "White"),
+        "black" to tr("Noir", "Black"),
+        "grey" to tr("Gris", "Grey"),
+        "silver" to tr("Argent", "Silver"),
+        "blue" to tr("Bleu", "Blue"),
+        "green" to tr("Vert", "Green"),
+        "red" to tr("Rouge", "Red"),
         "bronze" to "Bronze",
     )
 

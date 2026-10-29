@@ -16,21 +16,31 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Réglages"
+            android:text="@string/settings"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="32sp"
             android:textStyle="bold" />
 
         <TextView
             style="@style/Hint"
-            android:text="Tout est chiffré et conservé uniquement sur ce téléphone. Rien n'est envoyé ailleurs que chez Hyundai." />
+            android:text="@string/settings_privacy" />
+
+        <!-- ============ Langue ============ -->
+        <TextView style="@style/SectionTitle" android:text="@string/sec_language" />
+
+        <LinearLayout style="@style/Card">
+            <Spinner
+                android:id="@+id/spLang"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+        </LinearLayout>
 
         <!-- ============ Compte ============ -->
-        <TextView style="@style/SectionTitle" android:text="Compte MyHyundai" />
+        <TextView style="@style/SectionTitle" android:text="@string/sec_account" />
 
         <LinearLayout style="@style/Card">
 
-            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="Courriel" />
+            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="@string/email" />
             <EditText
                 android:id="@+id/etEmail"
                 android:layout_width="match_parent"
@@ -38,7 +48,7 @@
                 android:autofillHints="emailAddress"
                 android:inputType="textEmailAddress" />
 
-            <TextView style="@style/Label" android:text="Mot de passe" />
+            <TextView style="@style/Label" android:text="@string/password" />
             <EditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
@@ -46,7 +56,7 @@
                 android:autofillHints="password"
                 android:inputType="textPassword" />
 
-            <TextView style="@style/Label" android:text="NIP Bluelink (4 chiffres)" />
+            <TextView style="@style/Label" android:text="@string/pin" />
             <EditText
                 android:id="@+id/etPin"
                 android:layout_width="match_parent"
@@ -54,7 +64,7 @@
                 android:inputType="numberPassword"
                 android:maxLength="4" />
 
-            <TextView style="@style/Label" android:text="Code de vérification envoyé par" />
+            <TextView style="@style/Label" android:text="@string/mfa_via" />
             <RadioGroup
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -65,30 +75,30 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="24dp"
-                    android:text="Courriel" />
+                    android:text="@string/mfa_email" />
 
                 <RadioButton
                     android:id="@+id/rbSms"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Texto" />
+                    android:text="@string/mfa_sms" />
             </RadioGroup>
 
-            <TextView style="@style/Label" android:text="Nom affiché (facultatif)" />
+            <TextView style="@style/Label" android:text="@string/display_name" />
             <EditText
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Ex. : Mon Tucson"
+                android:hint="@string/display_name_hint"
                 android:inputType="textCapSentences" />
         </LinearLayout>
 
         <!-- ============ Climatisation ============ -->
-        <TextView style="@style/SectionTitle" android:text="Climatisation" />
+        <TextView style="@style/SectionTitle" android:text="@string/sec_climate" />
 
         <LinearLayout style="@style/Card">
 
-            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="« Chauffer » — température" />
+            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="@string/warm_temp" />
             <Spinner
                 android:id="@+id/spWarmTemp"
                 android:layout_width="match_parent"
@@ -98,33 +108,33 @@
                 android:id="@+id/cbWarmFront"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dégivrage du pare-brise" />
+                android:text="@string/front_defrost" />
 
             <CheckBox
                 android:id="@+id/cbWarmRear"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Dégivrage de la lunette arrière et des rétroviseurs" />
+                android:text="@string/rear_defrost" />
 
             <CheckBox
                 android:id="@+id/cbWarmSteering"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Volant chauffant" />
+                android:text="@string/steering_heat" />
 
-            <TextView style="@style/Label" android:text="« Chauffer » — sièges chauffants" />
+            <TextView style="@style/Label" android:text="@string/warm_seats" />
             <Spinner
                 android:id="@+id/spWarmSeat"
                 android:layout_width="match_parent"
                 android:layout_height="48dp" />
 
-            <TextView style="@style/Label" android:layout_marginTop="18dp" android:text="« Refroidir » — température" />
+            <TextView style="@style/Label" android:layout_marginTop="18dp" android:text="@string/cool_temp" />
             <Spinner
                 android:id="@+id/spCoolTemp"
                 android:layout_width="match_parent"
                 android:layout_height="48dp" />
 
-            <TextView style="@style/Label" android:text="« Refroidir » — sièges ventilés" />
+            <TextView style="@style/Label" android:text="@string/cool_seats" />
             <Spinner
                 android:id="@+id/spCoolSeat"
                 android:layout_width="match_parent"
@@ -135,27 +145,159 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Appliquer aux sièges arrière aussi" />
+                android:text="@string/seats_all" />
 
-            <TextView style="@style/Label" android:text="Durée" />
+            <TextView style="@style/Label" android:text="@string/duration" />
             <Spinner
                 android:id="@+id/spDuration"
                 android:layout_width="match_parent"
                 android:layout_height="48dp" />
         </LinearLayout>
 
-        <!-- ============ Image ============ -->
-        <TextView style="@style/SectionTitle" android:text="Image du véhicule" />
+        <!-- ============ Démarrage programmé ============ -->
+        <TextView
+            android:id="@+id/schedSection"
+            style="@style/SectionTitle"
+            android:text="@string/sec_schedule" />
 
         <LinearLayout style="@style/Card">
 
-            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="Version" />
+            <Switch
+                android:id="@+id/swSched"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sched_enable"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView style="@style/Hint" android:text="@string/sched_hint" />
+
+            <TextView style="@style/Label" android:layout_marginTop="14dp" android:text="@string/sched_time" />
+            <Button
+                android:id="@+id/btnSchedTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="120dp"
+                android:textSize="18sp" />
+
+            <TextView style="@style/Label" android:text="@string/sched_days" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <CheckBox android:id="@+id/cbD0" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+                <CheckBox android:id="@+id/cbD1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+                <CheckBox android:id="@+id/cbD2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+                <CheckBox android:id="@+id/cbD3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <CheckBox android:id="@+id/cbD4" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+                <CheckBox android:id="@+id/cbD5" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+                <CheckBox android:id="@+id/cbD6" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+                <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+            </LinearLayout>
+
+            <TextView style="@style/Label" android:text="@string/sched_mode" />
+            <Spinner
+                android:id="@+id/spSchedMode"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView style="@style/Label" android:text="@string/sched_warm_below" />
+            <Spinner
+                android:id="@+id/spWarmBelow"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <TextView style="@style/Label" android:text="@string/sched_cool_above" />
+            <Spinner
+                android:id="@+id/spCoolAbove"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+        </LinearLayout>
+
+        <!-- ============ Stationnement ============ -->
+        <TextView style="@style/SectionTitle" android:text="@string/sec_parking" />
+
+        <LinearLayout style="@style/Card">
+            <Switch
+                android:id="@+id/swPark"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/park_enable"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView style="@style/Hint" android:text="@string/park_hint" />
+        </LinearLayout>
+
+        <!-- ============ Alertes ============ -->
+        <TextView style="@style/SectionTitle" android:text="@string/sec_alerts" />
+
+        <LinearLayout style="@style/Card">
+
+            <TextView style="@style/Hint" android:layout_marginTop="0dp" android:text="@string/alerts_hint" />
+
+            <Switch
+                android:id="@+id/swAlertUnlocked"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/alert_unlocked"
+                android:textSize="15sp" />
+
+            <TextView style="@style/Label" android:layout_marginTop="4dp" android:text="@string/alert_unlocked_after" />
+            <Spinner
+                android:id="@+id/spUnlockedMin"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+
+            <Switch
+                android:id="@+id/swAlertOpen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/alert_open"
+                android:textSize="15sp" />
+
+            <Switch
+                android:id="@+id/swAlert12v"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/alert_12v"
+                android:textSize="15sp" />
+
+            <TextView style="@style/Label" android:layout_marginTop="4dp" android:text="@string/alert_12v_below" />
+            <Spinner
+                android:id="@+id/sp12v"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+        </LinearLayout>
+
+        <!-- ============ Véhicule ============ -->
+        <TextView style="@style/SectionTitle" android:text="@string/vehicle" />
+
+        <LinearLayout style="@style/Card">
+
+            <TextView style="@style/Label" android:layout_marginTop="0dp" android:text="@string/tank" />
+            <EditText
+                android:id="@+id/etTank"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal" />
+            <TextView style="@style/Hint" android:text="@string/tank_hint" />
+
+            <TextView style="@style/Label" android:text="@string/trim" />
             <Spinner
                 android:id="@+id/spTrim"
                 android:layout_width="match_parent"
                 android:layout_height="48dp" />
 
-            <TextView style="@style/Label" android:text="Couleur" />
+            <TextView style="@style/Label" android:text="@string/color" />
             <Spinner
                 android:id="@+id/spColor"
                 android:layout_width="match_parent"
@@ -166,7 +308,7 @@
         <TextView
             android:id="@+id/walkSection"
             style="@style/SectionTitle"
-            android:text="Verrouillage auto (walk-away lock)" />
+            android:text="@string/sec_walk" />
 
         <LinearLayout style="@style/Card">
 
@@ -174,13 +316,11 @@
                 android:id="@+id/swWalk"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Verrouiller quand je m'éloigne"
+                android:text="@string/walk_enable"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
-            <TextView
-                style="@style/Hint"
-                android:text="Quand ton téléphone se déconnecte du Bluetooth du véhicule, BlueLock attend le délai choisi, vérifie que l'auto est déverrouillée et arrêtée (moteur et climatisation), puis la verrouille. Si le Bluetooth se reconnecte pendant le compte à rebours, c'est annulé." />
+            <TextView style="@style/Hint" android:text="@string/walk_hint" />
 
             <TextView
                 android:id="@+id/tvWalkDevice"
@@ -193,9 +333,9 @@
                 android:id="@+id/btnWalkDevice"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Choisir le Bluetooth du véhicule" />
+                android:text="@string/walk_pick" />
 
-            <TextView style="@style/Label" android:text="Délai avant le verrouillage" />
+            <TextView style="@style/Label" android:text="@string/walk_delay" />
             <Spinner
                 android:id="@+id/spWalkDelay"
                 android:layout_width="match_parent"
@@ -206,13 +346,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Demander confirmation (ne jamais verrouiller sans mon accord)" />
+                android:text="@string/walk_confirm" />
 
             <CheckBox
                 android:id="@+id/cbWalkNotify"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="M'avertir aussi quand l'auto est déjà verrouillée" />
+                android:text="@string/walk_notify" />
 
             <TextView
                 android:id="@+id/tvBattery"
@@ -223,17 +363,15 @@
                 android:id="@+id/btnBattery"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Désactiver l'optimisation de batterie" />
+                android:text="@string/battery_btn" />
 
             <Button
                 android:id="@+id/btnWalkTest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tester (simulation, sans verrouiller)" />
+                android:text="@string/walk_test" />
 
-            <TextView
-                style="@style/Hint"
-                android:text="⚠ Garde toujours ta clé sur toi : si le téléphone reste dans l'auto quand elle s'éteint, elle peut se verrouiller." />
+            <TextView style="@style/Hint" android:text="@string/walk_warning" />
         </LinearLayout>
 
         <Button
@@ -242,7 +380,7 @@
             android:layout_height="56dp"
             android:layout_marginTop="28dp"
             android:backgroundTint="@color/accent"
-            android:text="Enregistrer"
+            android:text="@string/save"
             android:textColor="#FFFFFFFF"
             android:textSize="16sp" />
 
@@ -252,7 +390,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Tout effacer de ce téléphone"
+            android:text="@string/reset_all"
             android:textColor="@color/warn" />
     </LinearLayout>
 </ScrollView>

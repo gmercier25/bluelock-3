@@ -24,12 +24,12 @@ import java.util.Locale
 
 /** Textes communs à l'app et au widget. */
 object Fmt {
-    private val fr = Locale.CANADA_FRENCH
+    private val fr: Locale get() = Lang.locale()
 
     fun km(v: Number?): String = if (v == null) "?" else NumberFormat.getIntegerInstance(fr).format(v.toLong()) + " km"
 
     fun time(ms: Long): String {
-        if (ms <= 0) return "jamais"
+        if (ms <= 0) return tr("jamais", "never")
         val d = Date(ms)
         val sameDay = DateFormat.getDateInstance(DateFormat.SHORT, fr).format(d) ==
             DateFormat.getDateInstance(DateFormat.SHORT, fr).format(Date())
@@ -39,18 +39,18 @@ object Fmt {
 
     fun energyHeadline(st: CarStatus): String = when {
         st.supportsCharge && st.soc != null -> "${st.soc} %"
-        st.fuel != null -> "Essence ${st.fuel} %"
+        st.fuel != null -> tr("Essence ", "Fuel ") + "${st.fuel} %"
         st.soc != null && st.soc > 0 -> "${st.soc} %"
-        else -> "Essence ?"
+        else -> tr("Essence ?", "Fuel ?")
     }
 
     fun energyLine(st: CarStatus): String {
         val range = st.range?.let { " (~ ${km(it)})" } ?: ""
         return when {
-            st.supportsCharge && st.soc != null && st.fuel != null -> "Batterie ${st.soc} % · Essence ${st.fuel} %$range"
-            st.supportsCharge && st.soc != null -> "Batterie ${st.soc} %$range"
-            st.fuel != null -> "Essence ${st.fuel} %$range"
-            else -> "Niveau d'essence inconnu$range"
+            st.supportsCharge && st.soc != null && st.fuel != null -> tr("Batterie ", "Battery ") + "${st.soc} % · " + tr("Essence ", "Fuel ") + "${st.fuel} %$range"
+            st.supportsCharge && st.soc != null -> tr("Batterie ", "Battery ") + "${st.soc} %$range"
+            st.fuel != null -> tr("Essence ", "Fuel ") + "${st.fuel} %$range"
+            else -> tr("Niveau d'essence inconnu", "Fuel level unknown") + range
         }
     }
 }
@@ -85,11 +85,11 @@ object Widgets {
         if (bmp != null) rv.setImageViewBitmap(R.id.wCar, bmp) else rv.setImageViewResource(R.id.wCar, R.drawable.ic_car)
 
         if (st == null) {
-            rv.setTextViewText(R.id.wEnergy, if (Config.load().hasCredentials()) "—" else "À configurer")
+            rv.setTextViewText(R.id.wEnergy, if (Config.load().hasCredentials()) "—" else tr("À configurer", "Set up needed"))
             rv.setTextViewText(R.id.wRange, "")
             rv.setTextViewText(R.id.wLockText, "")
             rv.setViewVisibility(R.id.wLockIcon, View.GONE)
-            rv.setTextViewText(R.id.wFooter, "Ouvre l'app pour commencer")
+            rv.setTextViewText(R.id.wFooter, tr("Ouvre l'app pour commencer", "Open the app to get started"))
         } else {
             rv.setTextViewText(R.id.wEnergy, Fmt.energyHeadline(st))
             rv.setTextViewText(R.id.wRange, st.range?.let { "~ ${Fmt.km(it)}" } ?: "")
@@ -97,7 +97,7 @@ object Widgets {
             rv.setImageViewResource(R.id.wLockIcon, if (st.locked) R.drawable.ic_lock_green else R.drawable.ic_lock_open_red)
             rv.setTextViewText(
                 R.id.wLockText,
-                (if (st.locked) "Verrouillé" else "Déverrouillé") + if (st.climate) " · Clim" else ""
+                (if (st.locked) tr("Verrouillé", "Locked") else tr("Déverrouillé", "Unlocked")) + if (st.climate) tr(" · Clim", " · A/C") else ""
             )
             val parts = mutableListOf<String>()
             st.odometer?.let { parts += Fmt.km(it) }
@@ -157,7 +157,8 @@ class StatusRefreshJob : JobService() {
         Car.executor.execute {
             try {
                 if (Config.load().hasCredentials()) {
-                    Car.refresh(false, null)
+                    val st = Car.refresh(false, null)
+                    try { Alerts.check(this, st) } catch (_: Exception) {}
                     Car.ensureImage()
                 }
             } catch (_: Exception) {
@@ -171,14 +172,16 @@ class StatusRefreshJob : JobService() {
     override fun onStopJob(params: JobParameters): Boolean = true
 
     companion object {
-        private const val JOB_ID = 4242
+        private const val JOB_ID = 4244
+        private const val OLD_JOB_ID = 4242
 
         fun schedule(ctx: Context) {
             val js = ctx.getSystemService(JobScheduler::class.java) ?: return
+            if (js.getPendingJob(OLD_JOB_ID) != null) js.cancel(OLD_JOB_ID)
             if (js.getPendingJob(JOB_ID) != null) return
             js.schedule(
                 JobInfo.Builder(JOB_ID, ComponentName(ctx, StatusRefreshJob::class.java))
-                    .setPeriodic(30 * 60 * 1000L)
+                    .setPeriodic(15 * 60 * 1000L)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .setPersisted(true)
                     .build()
@@ -193,12 +196,12 @@ class LockTileService : TileService() {
         Car.init(this)
         val t = qsTile ?: return
         val st = Car.status()
-        t.label = "Verrouiller"
+        t.label = tr("Verrouiller", "Lock")
         if (Build.VERSION.SDK_INT >= 29) {
             t.subtitle = when {
                 st == null -> Car.displayName()
-                st.locked -> "Verrouillé"
-                else -> "Déverrouillé"
+                st.locked -> tr("Verrouillé", "Locked")
+                else -> tr("Déverrouillé", "Unlocked")
             }
         }
         t.state = if (st != null && !st.locked) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE

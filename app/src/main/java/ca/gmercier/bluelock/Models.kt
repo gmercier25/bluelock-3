@@ -70,6 +70,24 @@ data class Config(
     val walkDelaySec: Int = 30,
     val walkConfirm: Boolean = false,
     val walkNotifyAlreadyLocked: Boolean = true,
+    val tankL: Double = 52.0,
+    val lang: String = "auto",                // auto, fr, en
+    // Démarrage programmé
+    val schedEnabled: Boolean = false,
+    val schedHour: Int = 7,
+    val schedMinute: Int = 20,
+    val schedDays: Int = 0b0011111,          // bit 0 = lundi … bit 6 = dimanche
+    val schedMode: String = "weather",        // weather, warm, cool
+    val schedWarmBelow: Int = 5,
+    val schedCoolAbove: Int = 25,
+    // Stationnement
+    val parkEnabled: Boolean = false,
+    // Alertes
+    val alertUnlocked: Boolean = true,
+    val alertUnlockedMin: Int = 30,
+    val alertOpen: Boolean = true,
+    val alert12v: Boolean = true,
+    val alert12vBelow: Int = 50,
 ) {
     fun hasCredentials() = username.isNotBlank() && password.isNotBlank() && pin.isNotBlank()
 
@@ -84,9 +102,19 @@ data class Config(
         .put("walkEnabled", walkEnabled).put("walkDeviceAddress", walkDeviceAddress)
         .put("walkDeviceName", walkDeviceName).put("walkDelaySec", walkDelaySec)
         .put("walkConfirm", walkConfirm).put("walkNotifyAlreadyLocked", walkNotifyAlreadyLocked)
+        .put("tankL", tankL).put("lang", lang)
+        .put("schedEnabled", schedEnabled).put("schedHour", schedHour).put("schedMinute", schedMinute)
+        .put("schedDays", schedDays).put("schedMode", schedMode)
+        .put("schedWarmBelow", schedWarmBelow).put("schedCoolAbove", schedCoolAbove)
+        .put("parkEnabled", parkEnabled)
+        .put("alertUnlocked", alertUnlocked).put("alertUnlockedMin", alertUnlockedMin)
+        .put("alertOpen", alertOpen).put("alert12v", alert12v).put("alert12vBelow", alert12vBelow)
         .toString()
 
-    fun save() = Store.put(KEY, toJson())
+    fun save() {
+        Store.put(KEY, toJson())
+        Lang.reset()
+    }
 
     companion object {
         private const val KEY = "config"
@@ -119,6 +147,21 @@ data class Config(
                     walkDelaySec = j.optInt("walkDelaySec", d.walkDelaySec),
                     walkConfirm = j.optBoolean("walkConfirm", d.walkConfirm),
                     walkNotifyAlreadyLocked = j.optBoolean("walkNotifyAlreadyLocked", d.walkNotifyAlreadyLocked),
+                    tankL = j.optDouble("tankL", d.tankL),
+                    lang = j.optString("lang", d.lang),
+                    schedEnabled = j.optBoolean("schedEnabled", d.schedEnabled),
+                    schedHour = j.optInt("schedHour", d.schedHour),
+                    schedMinute = j.optInt("schedMinute", d.schedMinute),
+                    schedDays = j.optInt("schedDays", d.schedDays),
+                    schedMode = j.optString("schedMode", d.schedMode),
+                    schedWarmBelow = j.optInt("schedWarmBelow", d.schedWarmBelow),
+                    schedCoolAbove = j.optInt("schedCoolAbove", d.schedCoolAbove),
+                    parkEnabled = j.optBoolean("parkEnabled", d.parkEnabled),
+                    alertUnlocked = j.optBoolean("alertUnlocked", d.alertUnlocked),
+                    alertUnlockedMin = j.optInt("alertUnlockedMin", d.alertUnlockedMin),
+                    alertOpen = j.optBoolean("alertOpen", d.alertOpen),
+                    alert12v = j.optBoolean("alert12v", d.alert12v),
+                    alert12vBelow = j.optInt("alert12vBelow", d.alert12vBelow),
                 )
             } catch (e: Exception) {
                 Config()
@@ -137,21 +180,25 @@ data class CarInfo(
     val modelYear: String,
     val color: String,
     val trim: String,
+    val fuelKind: String = "",   // G = essence/hybride, E = électrique, P = hybride rechargeable
 ) {
+    val isElectrified: Boolean get() = fuelKind == "E" || fuelKind == "P"
+
     val displayName: String
         get() = nickName.ifBlank { listOf(modelYear, modelName).filter { it.isNotBlank() }.joinToString(" ") }
-            .ifBlank { "Mon véhicule" }
+            .ifBlank { tr("Mon véhicule", "My vehicle") }
 
     fun toJson(): String = JSONObject()
         .put("id", id).put("vin", vin).put("nickName", nickName).put("modelName", modelName)
-        .put("modelYear", modelYear).put("color", color).put("trim", trim).toString()
+        .put("modelYear", modelYear).put("color", color).put("trim", trim).put("fuelKind", fuelKind).toString()
 
     companion object {
         fun fromJson(s: String): CarInfo? = try {
             val j = JSONObject(s)
             CarInfo(
                 j.getString("id"), j.optString("vin"), j.optString("nickName"), j.optString("modelName"),
-                j.optString("modelYear"), j.optString("color"), j.optString("trim")
+                j.optString("modelYear"), j.optString("color"), j.optString("trim"),
+                j.optString("fuelKind")
             )
         } catch (e: Exception) {
             null

@@ -11,8 +11,8 @@ android {
         applicationId = "ca.gmercier.bluelock"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 6
+        versionName = "1.2.0"
     }
 
     // Clé de signature personnelle (fixe) : permet d'installer les mises à jour

@@ -23,6 +23,7 @@ object Notifs {
     const val CH_WALK = "walkaway"
     const val CH_CMD = "commands"
     const val CH_RESULT = "results"
+    const val CH_ALERT = "alerts"
 
     const val ID_WALK = 1001
     const val ID_CMD = 1002
@@ -34,15 +35,18 @@ object Notifs {
     fun ensureChannels(ctx: Context) {
         val nm = ctx.getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
-            NotificationChannel(CH_WALK, "Verrouillage auto", NotificationManager.IMPORTANCE_HIGH).apply {
-                description = "Compte à rebours et confirmation du verrouillage quand tu t'éloignes"
+            NotificationChannel(CH_WALK, tr("Verrouillage auto", "Auto-lock"), NotificationManager.IMPORTANCE_HIGH).apply {
+                description = tr("Compte à rebours et confirmation du verrouillage quand tu t'éloignes", "Countdown and lock confirmation when you walk away")
             }
         )
         nm.createNotificationChannel(
-            NotificationChannel(CH_CMD, "Commandes en cours", NotificationManager.IMPORTANCE_LOW)
+            NotificationChannel(CH_CMD, tr("Commandes en cours", "Commands in progress"), NotificationManager.IMPORTANCE_LOW)
         )
         nm.createNotificationChannel(
-            NotificationChannel(CH_RESULT, "Résultats des commandes", NotificationManager.IMPORTANCE_DEFAULT)
+            NotificationChannel(CH_ALERT, tr("Alertes du véhicule", "Vehicle alerts"), NotificationManager.IMPORTANCE_HIGH)
+        )
+        nm.createNotificationChannel(
+            NotificationChannel(CH_RESULT, tr("Résultats des commandes", "Command results"), NotificationManager.IMPORTANCE_DEFAULT)
         )
     }
 
